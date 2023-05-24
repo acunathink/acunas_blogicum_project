@@ -1,7 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.urls import reverse
 
 from blog.managers import CategoryManager, PublishManager
+
 
 User = get_user_model()
 
@@ -15,6 +17,8 @@ class BaseModel(models.Model):
     created_at = models.DateTimeField(
         verbose_name='Добавлено',
         auto_now_add=True,
+        null=True,
+        blank=True
     )
 
     class Meta:
@@ -71,6 +75,9 @@ class Post(BaseModel, TitleModel):
     text = models.TextField(
         verbose_name='Текст'
     )
+    image = models.ImageField(
+        'Изображение', upload_to='posts_images', blank=True
+    )
     pub_date = models.DateTimeField(
         verbose_name='Дата и время публикации',
         help_text=(
@@ -104,3 +111,6 @@ class Post(BaseModel, TitleModel):
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
         ordering = ('-pub_date', '-created_at', 'title')
+
+    def get_absolute_url(self):
+        return reverse('blog:post_detail', kwargs={'pk': self.pk})

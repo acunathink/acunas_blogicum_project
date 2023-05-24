@@ -13,7 +13,7 @@ SECRET_KEY = 'django-insecure-bku^6=bs*b0+rwltsce9(a3c29u0l!8n3r0q^ry(+9!h0mqb92
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -21,6 +21,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'blog.apps.BlogConfig',
     'pages.apps.PagesConfig',
+    'core.apps.CoreConfig',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -28,6 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_bootstrap5',
 ]
 
 MIDDLEWARE = [
@@ -41,6 +43,10 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'blogicum.urls'
+
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
+
+MEDIA_ROOT = BASE_DIR / 'media'
 
 TEMPLATES_DIR = BASE_DIR / 'templates'
 
@@ -59,6 +65,12 @@ TEMPLATES = [
         },
     },
 ]
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+
+EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
+
+LOGIN_REDIRECT_URL = 'blog:index'
 
 WSGI_APPLICATION = 'blogicum.wsgi.application'
 
