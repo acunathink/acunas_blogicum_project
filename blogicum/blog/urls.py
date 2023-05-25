@@ -34,11 +34,22 @@ urlpatterns = [
          name='profile'),
 
     path('profile/<int:pk>/edit/',
-         views.UserBaseUpdateView.as_view(),
+         views.UserUpdateView.as_view(),
          name='edit_profile'),
 
     path('category/<slug:category_slug>/',
-         views.category_posts,
+         views.CategoryDetailView.as_view(),
          name='category_posts'),
 
+    path('<int:pk>/comment/',
+         views.edit_comment,
+         name='add_comment'),
+
+    path('posts/<int:pk>/edit_comment/<int:comment_id>',
+         views.CommentEdit.as_view(),
+         name='edit_comment'),
+
+    path('posts/<int:pk>/delete_comment/<int:comment_id>',
+         views.CommentDelete.as_view(),
+         name='delete_comment'),
 ]

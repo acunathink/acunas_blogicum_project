@@ -21,7 +21,6 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 INSTALLED_APPS = [
     'blog.apps.BlogConfig',
     'pages.apps.PagesConfig',
-    'core.apps.CoreConfig',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -44,7 +43,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'blogicum.urls'
 
-CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
+CSRF_FAILURE_VIEW = 'pages.views.csrf_failure'
 
 MEDIA_ROOT = BASE_DIR / 'media'
 
