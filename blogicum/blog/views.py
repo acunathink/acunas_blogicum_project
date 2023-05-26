@@ -13,6 +13,7 @@ from blog import mixins
 
 class PostListView(ListView):
     model = Post
+    queryset = Post.public.category()
     template_name = 'blog/index.html'
     ordering = '-pub_date'
     paginate_by = 10
@@ -33,7 +34,7 @@ class CategoryDetailView(mixins.PaginatePost, DetailView):
     context_object_name = 'category'
 
 
-class UserUpdateView(UpdateView):
+class UserUpdateView(LoginRequiredMixin, UpdateView):
     model = get_user_model()
     template_name = 'blog/user.html'
     fields = ['first_name', 'last_name', 'username', 'email']
@@ -78,7 +79,7 @@ class PostDeleteView(LoginRequiredMixin, mixins.AuthorRequired, DeleteView):
     pk_url_kwarg = 'pk'
 
 
-@login_required
+@login_required()
 def edit_comment(request, pk):
     post = get_object_or_404(Post, pk=pk)
     form = CommentForm(request.POST)
@@ -87,7 +88,6 @@ def edit_comment(request, pk):
         comment.author = request.user
         comment.post = post
         comment.save()
-        print(f'|| pk >{pk}< ||')
     return redirect('blog:post_detail', pk=pk)
 
 
