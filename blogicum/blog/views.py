@@ -45,10 +45,12 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     fields = ['title', 'text', 'location', 'image', 'pub_date', 'category']
     template_name = 'blog/create.html'
-    success_url = reverse_lazy('blog:index')
 
     def form_valid(self, form):
         form.instance.author = self.request.user
+        self.success_url = reverse_lazy(
+            'blog:profile', kwargs={'username': self.request.user}
+        )
         return super().form_valid(form)
 
 
@@ -69,7 +71,11 @@ class PostUpdateView(LoginRequiredMixin, mixins.AuthorRequired, UpdateView):
     model = Post
     template_name = 'blog/create.html'
     fields = ['title', 'text', 'location', 'image', 'pub_date', 'category']
-    success_url = reverse_lazy('blog:index')
+
+    def get_success_url(self):
+        return reverse(
+            'blog:post_detail', kwargs={'pk': self.kwargs['pk']}
+        )
 
 
 class PostDeleteView(LoginRequiredMixin, mixins.AuthorRequired, DeleteView):

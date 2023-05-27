@@ -108,6 +108,11 @@ class Post(BaseModel, TitleModel):
     objects = models.Manager()
     public = CategoryManager()
     published = PublishManager()
+    comment_count = models.IntegerField(
+        default=0,
+        null=True,
+        blank=True,
+        )
 
     class Meta:
         verbose_name = 'публикация'
@@ -130,6 +135,16 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ('created_at',)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.post.comment_count = self.post.comments.count()
+        self.post.save()
+
+    def delete(self):
+        self.post.comment_count -= 1
+        self.post.save()
+        return super().delete()
 
 
 class CommentForm(forms.ModelForm):
