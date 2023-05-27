@@ -1,14 +1,12 @@
+from blog import forms, mixins
+from blog.models import Category, Comment, CommentForm, Post
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse_lazy, reverse
-from django.views.generic import (
-    CreateView, DeleteView, DetailView, ListView, UpdateView
-)
-
-from blog.models import Category, Post, CommentForm, Comment
-from blog import mixins
+from django.urls import reverse, reverse_lazy
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+                                  UpdateView)
 
 
 class PostListView(ListView):
@@ -43,8 +41,8 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
-    fields = ['title', 'text', 'location', 'image', 'pub_date', 'category']
     template_name = 'blog/create.html'
+    form_class = forms.PostCreateForm
 
     def form_valid(self, form):
         form.instance.author = self.request.user

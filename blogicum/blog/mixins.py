@@ -1,8 +1,8 @@
-from django.shortcuts import get_object_or_404, redirect
-from django.http import Http404
-from blog.models import Comment, Category
-from django.urls import reverse
+from blog.models import Category, Comment
 from django.core.paginator import Paginator
+from django.http import Http404
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.utils import timezone
 
 

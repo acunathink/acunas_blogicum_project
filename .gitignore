@@ -152,3 +152,4 @@ sent_emails/
 
 templates.zip
 blogicum/templates.old*
+db.json

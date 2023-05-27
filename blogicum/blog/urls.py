@@ -1,8 +1,10 @@
 # from django.contrib.auth import get_user_model
 from django.urls import path
-# from django.views.generic import DetailView
 
 from . import views
+
+# from django.views.generic import DetailView
+
 
 app_name = 'blog'
 

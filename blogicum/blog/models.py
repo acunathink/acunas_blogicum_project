@@ -1,11 +1,8 @@
+from blog.managers import CategoryManager, PublishManager
+from django import forms
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
-from django import forms
-
-
-from blog.managers import CategoryManager, PublishManager
-
 
 User = get_user_model()
 
