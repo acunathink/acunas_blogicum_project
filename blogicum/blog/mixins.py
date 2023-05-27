@@ -1,5 +1,5 @@
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponseForbidden, Http404
+from django.shortcuts import get_object_or_404, redirect
+from django.http import Http404
 from blog.models import Comment, Category
 from django.urls import reverse
 from django.core.paginator import Paginator
@@ -12,7 +12,7 @@ class AuthorRequired:
         pk = kwargs[self.pk_url_kwarg]
         instance = get_object_or_404(self.model, pk=pk)
         if instance.author != request.user:
-            raise HttpResponseForbidden
+            return redirect('blog:post_detail', pk=pk)
         return super().dispatch(request, *args, **kwargs)
 
 
