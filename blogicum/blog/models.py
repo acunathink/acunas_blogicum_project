@@ -1,8 +1,8 @@
-from blog.managers import CategoryManager, PublishManager
 from django import forms
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.urls import reverse
+
+from blog.managers import CategoryManager, PublishManager
 
 User = get_user_model()
 
@@ -102,22 +102,19 @@ class Post(BaseModel, TitleModel):
         on_delete=models.SET_NULL,
         null=True,
     )
-    objects = models.Manager()
-    public = CategoryManager()
-    published = PublishManager()
     comment_count = models.IntegerField(
         default=0,
         null=True,
         blank=True,
-        )
+    )
+    objects = models.Manager()
+    public = CategoryManager()
+    published = PublishManager()
 
     class Meta:
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
         ordering = ('-pub_date', '-created_at', 'title')
-
-    def get_absolute_url(self):
-        return reverse('blog:post_detail', kwargs={'pk': self.pk})
 
 
 class Comment(models.Model):

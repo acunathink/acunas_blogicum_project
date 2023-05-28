@@ -1,14 +1,9 @@
-# from django.contrib.auth import get_user_model
 from django.urls import path
 
 from . import views
 
-# from django.views.generic import DetailView
-
 
 app_name = 'blog'
-
-# User = get_user_model()
 
 urlpatterns = [
     path('',
@@ -31,20 +26,8 @@ urlpatterns = [
          views.PostDeleteView.as_view(),
          name='delete_post'),
 
-    path('profile/<slug:username>/',
-         views.UserDetailView.as_view(),
-         name='profile'),
-
-    path('profile/<int:pk>/edit/',
-         views.UserUpdateView.as_view(),
-         name='edit_profile'),
-
-    path('category/<slug:category_slug>/',
-         views.CategoryDetailView.as_view(),
-         name='category_posts'),
-
     path('<int:pk>/comment/',
-         views.edit_comment,
+         views.add_comment,
          name='add_comment'),
 
     path('posts/<int:pk>/edit_comment/<int:comment_id>',
@@ -54,4 +37,16 @@ urlpatterns = [
     path('posts/<int:pk>/delete_comment/<int:comment_id>',
          views.CommentDelete.as_view(),
          name='delete_comment'),
+
+    path('category/<slug:category_slug>/',
+         views.CategoryDetailView.as_view(),
+         name='category_posts'),
+
+    path('profile/<slug:username>/',
+         views.UserDetailView.as_view(),
+         name='profile'),
+
+    path('profile/<int:pk>/edit/',
+         views.UserUpdateView.as_view(),
+         name='edit_profile'),
 ]

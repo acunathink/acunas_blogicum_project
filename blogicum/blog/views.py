@@ -1,12 +1,13 @@
-from blog import forms, mixins
-from blog.models import Category, Comment, CommentForm, Post
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
-                                  UpdateView)
+from django.views.generic import (
+    CreateView, DeleteView, DetailView, ListView, UpdateView
+)
+from blog import forms, mixins
+from blog.models import Category, CommentForm, Post
 
 
 class PostListView(ListView):
@@ -15,28 +16,6 @@ class PostListView(ListView):
     template_name = 'blog/index.html'
     ordering = '-pub_date'
     paginate_by = 10
-
-
-class UserDetailView(mixins.PaginatePost, DetailView):
-    model = get_user_model()
-    template_name = 'blog/profile.html'
-    slug_field = 'username'
-    slug_url_kwarg = 'username'
-    context_object_name = 'profile'
-
-
-class CategoryDetailView(mixins.PaginatePost, DetailView):
-    model = Category
-    template_name = 'blog/category.html'
-    slug_url_kwarg = 'category_slug'
-    context_object_name = 'category'
-
-
-class UserUpdateView(LoginRequiredMixin, UpdateView):
-    model = get_user_model()
-    template_name = 'blog/user.html'
-    fields = ['first_name', 'last_name', 'username', 'email']
-    success_url = reverse_lazy('blog:index')
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -68,7 +47,7 @@ class PostDetailView(DetailView):
 class PostUpdateView(LoginRequiredMixin, mixins.AuthorRequired, UpdateView):
     model = Post
     template_name = 'blog/create.html'
-    fields = ['title', 'text', 'location', 'image', 'pub_date', 'category']
+    form_class = forms.PostCreateForm
 
     def get_success_url(self):
         return reverse(
@@ -83,8 +62,8 @@ class PostDeleteView(LoginRequiredMixin, mixins.AuthorRequired, DeleteView):
     pk_url_kwarg = 'pk'
 
 
-@login_required()
-def edit_comment(request, pk):
+@login_required
+def add_comment(request, pk):
     post = get_object_or_404(Post, pk=pk)
     form = CommentForm(request.POST)
     if form.is_valid():
@@ -93,24 +72,6 @@ def edit_comment(request, pk):
         comment.post = post
         comment.save()
     return redirect('blog:post_detail', pk=pk)
-
-
-class СommentCreateView(LoginRequiredMixin, CreateView):
-    comment = None
-    model = Comment
-    form_class = CommentForm
-
-    def dispatch(self, request, *args, **kwargs):
-        self.post = get_object_or_404(Post, pk=kwargs['pk'])
-        return super().dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        form.instance.comment = self.comment
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse('blog:post_detail', kwargs={'pk': self.post.pk})
 
 
 class CommentEdit(LoginRequiredMixin, mixins.CommentRequired, UpdateView):
@@ -122,3 +83,25 @@ class CommentEdit(LoginRequiredMixin, mixins.CommentRequired, UpdateView):
 class CommentDelete(LoginRequiredMixin, mixins.CommentRequired, DeleteView):
     template_name = 'blog/comment.html'
     pk_url_kwarg = 'comment_id'
+
+
+class CategoryDetailView(mixins.PaginatePost, DetailView):
+    model = Category
+    template_name = 'blog/category.html'
+    slug_url_kwarg = 'category_slug'
+    context_object_name = 'category'
+
+
+class UserDetailView(mixins.PaginatePost, DetailView):
+    model = get_user_model()
+    template_name = 'blog/profile.html'
+    slug_field = 'username'
+    slug_url_kwarg = 'username'
+    context_object_name = 'profile'
+
+
+class UserUpdateView(LoginRequiredMixin, UpdateView):
+    model = get_user_model()
+    template_name = 'blog/user.html'
+    fields = ['first_name', 'last_name', 'username', 'email']
+    success_url = reverse_lazy('blog:index')
