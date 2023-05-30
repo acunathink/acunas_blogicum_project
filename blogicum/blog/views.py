@@ -7,12 +7,14 @@ from django.views.generic import (
 )
 
 from blog import forms, mixins
-from blog.models import Category, CommentForm, Post, User
+from blog.models import Category, Post, User
 
 
 class PostListView(ListView):
     model = Post
-    queryset = Post.public.category()
+    queryset = Post.public.category().select_related(
+        'category', 'location', 'author'
+    )
     template_name = 'blog/index.html'
     ordering = '-pub_date'
     paginate_by = mixins.POSTS_PER_PAGE
@@ -25,7 +27,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
-        self.success_url = reverse_lazy(
+        self.success_url = reverse(
             'blog:profile', kwargs={'username': self.request.user}
         )
         return super().form_valid(form)
@@ -37,7 +39,7 @@ class PostDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = CommentForm()
+        context['form'] = forms.CommentForm()
         context['comments'] = (
             self.object.comments.select_related('author')
         )
@@ -65,7 +67,7 @@ class PostDeleteView(LoginRequiredMixin, mixins.AuthorRequired, DeleteView):
 @login_required
 def add_comment(request, pk):
     post = get_object_or_404(Post, pk=pk)
-    form = CommentForm(request.POST)
+    form = forms.CommentForm(request.POST)
     if form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user

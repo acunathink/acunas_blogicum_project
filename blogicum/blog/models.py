@@ -1,4 +1,3 @@
-from django import forms
 from django.contrib.auth import get_user_model
 from django.db import models
 
@@ -127,9 +126,3 @@ class Comment(models.Model):
         ordering = ('created_at',)
         verbose_name = 'комментарий'
         verbose_name_plural = 'Комментарии'
-
-
-class CommentForm(forms.ModelForm):
-    class Meta:
-        model = Comment
-        fields = ('text',)
