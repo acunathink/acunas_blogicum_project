@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from blog.managers import CategoryManager, PublishManager
+from blog import managers
 
 User = get_user_model()
 
@@ -102,14 +102,10 @@ class Post(BaseModel, TitleModel):
         on_delete=models.SET_NULL,
         null=True,
     )
-    comment_count = models.IntegerField(
-        default=0,
-        null=True,
-        blank=True,
-    )
+
     objects = models.Manager()
-    public = CategoryManager()
-    published = PublishManager()
+    public = managers.CategoryManager()
+    published = managers.PublishManager()
 
     class Meta:
         verbose_name = 'публикация'
@@ -129,16 +125,8 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ('created_at',)
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.post.comment_count = self.post.comments.count()
-        self.post.save()
-
-    def delete(self):
-        self.post.comment_count -= 1
-        self.post.save()
-        return super().delete()
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
 
 
 class CommentForm(forms.ModelForm):

@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
@@ -6,8 +5,9 @@ from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView, UpdateView
 )
+
 from blog import forms, mixins
-from blog.models import Category, CommentForm, Post
+from blog.models import Category, CommentForm, Post, User
 
 
 class PostListView(ListView):
@@ -15,7 +15,7 @@ class PostListView(ListView):
     queryset = Post.public.category()
     template_name = 'blog/index.html'
     ordering = '-pub_date'
-    paginate_by = 10
+    paginate_by = mixins.POSTS_PER_PAGE
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -76,24 +76,26 @@ def add_comment(request, pk):
 
 class CommentEdit(LoginRequiredMixin, mixins.CommentRequired, UpdateView):
     template_name = 'blog/comment.html'
-    pk_url_kwarg = 'comment_id'
     fields = ['text', ]
 
 
 class CommentDelete(LoginRequiredMixin, mixins.CommentRequired, DeleteView):
     template_name = 'blog/comment.html'
-    pk_url_kwarg = 'comment_id'
 
 
-class CategoryDetailView(mixins.PaginatePost, DetailView):
+class CategoryDetailView(mixins.PostFilter, mixins.PaginatePost, DetailView):
     model = Category
     template_name = 'blog/category.html'
     slug_url_kwarg = 'category_slug'
     context_object_name = 'category'
 
+    def get_queryset(self):
+        queryset = super().get_queryset().filter(is_published=True)
+        return queryset
 
-class UserDetailView(mixins.PaginatePost, DetailView):
-    model = get_user_model()
+
+class UserDetailView(mixins.PostFilter, mixins.PaginatePost, DetailView):
+    model = User
     template_name = 'blog/profile.html'
     slug_field = 'username'
     slug_url_kwarg = 'username'
@@ -101,7 +103,7 @@ class UserDetailView(mixins.PaginatePost, DetailView):
 
 
 class UserUpdateView(LoginRequiredMixin, UpdateView):
-    model = get_user_model()
+    model = User
     template_name = 'blog/user.html'
     fields = ['first_name', 'last_name', 'username', 'email']
     success_url = reverse_lazy('blog:index')

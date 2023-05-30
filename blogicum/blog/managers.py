@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.db.models import Count
 
 
 class PublishManager(models.Manager):
@@ -12,4 +13,7 @@ class PublishManager(models.Manager):
 
 class CategoryManager(PublishManager):
     def category(self):
-        return self.filter(category__is_published=True)
+        return (
+            self.filter(category__is_published=True)
+            .annotate(comment_count=Count('comments'))
+        )
