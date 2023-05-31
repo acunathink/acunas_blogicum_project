@@ -1,13 +1,12 @@
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView, UpdateView
 )
 
 from blog import forms, mixins
-from blog.models import Category, Post, User
+from blog.models import Category, Comment, Post, User
 
 
 class PostListView(ListView):
@@ -64,16 +63,23 @@ class PostDeleteView(LoginRequiredMixin, mixins.AuthorRequired, DeleteView):
     pk_url_kwarg = 'pk'
 
 
-@login_required
-def add_comment(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    form = forms.CommentForm(request.POST)
-    if form.is_valid():
-        comment = form.save(commit=False)
-        comment.author = request.user
-        comment.post = post
-        comment.save()
-    return redirect('blog:post_detail', pk=pk)
+class CommentAdd(LoginRequiredMixin, CreateView):
+    model = Comment
+    form_class = forms.CommentForm
+    related_post = None
+
+    def dispatch(self, request, **kwargs):
+        self.related_post = get_object_or_404(Post, pk=kwargs['pk'])
+        return super().dispatch(request)
+
+    def form_valid(self, form):
+        if form.instance is not None:
+            form.instance.author = self.request.user
+            form.instance.post = self.related_post
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('blog:post_detail', kwargs={'pk': self.related_post.pk})
 
 
 class CommentEdit(LoginRequiredMixin, mixins.CommentRequired, UpdateView):

@@ -26,7 +26,7 @@ urlpatterns = [
          name='delete_post'),
 
     path('<int:pk>/comment/',
-         views.add_comment,
+         views.CommentAdd.as_view(),
          name='add_comment'),
 
     path('posts/<int:pk>/edit_comment/<int:comment_id>',
