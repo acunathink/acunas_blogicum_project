@@ -3,13 +3,13 @@ from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
+from django.views.generic import View
 
 from blog.models import Comment
+from blog import constants
 
-POSTS_PER_PAGE = 10
 
-
-class AuthorRequired:
+class AuthorRequiredMixin(View):
 
     def dispatch(self, request, *args, **kwargs):
         pk = kwargs[self.pk_url_kwarg]
@@ -19,7 +19,7 @@ class AuthorRequired:
         return super().dispatch(request, *args, **kwargs)
 
 
-class CommentRequired(AuthorRequired):
+class CommentMixin(AuthorRequiredMixin):
     model = Comment
     pk_url_kwarg = 'comment_id'
 
@@ -27,7 +27,7 @@ class CommentRequired(AuthorRequired):
         return reverse('blog:post_detail', kwargs={'pk': self.kwargs['pk']})
 
 
-class PostFilter:
+class PostFilterMixin():
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -49,12 +49,12 @@ class PostFilter:
         return self.render_to_response(context)
 
 
-class PaginatePost:
+class PaginateMixin:
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user_posts = self.kwargs['user_posts']
-        paginator = Paginator(user_posts, POSTS_PER_PAGE)
+        paginator = Paginator(user_posts, constants.POSTS_PER_PAGE)
         page_number = self.request.GET.get('page')
         context['page_obj'] = paginator.get_page(page_number)
         return context

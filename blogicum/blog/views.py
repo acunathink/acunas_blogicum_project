@@ -5,8 +5,12 @@ from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView, UpdateView
 )
 
-from blog import forms, mixins
+from blog import forms
+from blog.mixins import (
+    AuthorRequiredMixin, CommentMixin, PostFilterMixin, PaginateMixin
+)
 from blog.models import Category, Comment, Post, User
+from blog import constants
 
 
 class PostListView(ListView):
@@ -16,7 +20,7 @@ class PostListView(ListView):
     )
     template_name = 'blog/index.html'
     ordering = '-pub_date'
-    paginate_by = mixins.POSTS_PER_PAGE
+    paginate_by = constants.POSTS_PER_PAGE
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -45,7 +49,7 @@ class PostDetailView(DetailView):
         return context
 
 
-class PostUpdateView(LoginRequiredMixin, mixins.AuthorRequired, UpdateView):
+class PostUpdateView(LoginRequiredMixin, AuthorRequiredMixin, UpdateView):
     model = Post
     template_name = 'blog/create.html'
     form_class = forms.PostCreateForm
@@ -56,7 +60,7 @@ class PostUpdateView(LoginRequiredMixin, mixins.AuthorRequired, UpdateView):
         )
 
 
-class PostDeleteView(LoginRequiredMixin, mixins.AuthorRequired, DeleteView):
+class PostDeleteView(LoginRequiredMixin, AuthorRequiredMixin, DeleteView):
     model = Post
     template_name = 'blog/create.html'
     success_url = reverse_lazy('blog:index')
@@ -82,16 +86,16 @@ class CommentAdd(LoginRequiredMixin, CreateView):
         return reverse('blog:post_detail', kwargs={'pk': self.related_post.pk})
 
 
-class CommentEdit(LoginRequiredMixin, mixins.CommentRequired, UpdateView):
+class CommentEdit(LoginRequiredMixin, CommentMixin, UpdateView):
     template_name = 'blog/comment.html'
     fields = ['text', ]
 
 
-class CommentDelete(LoginRequiredMixin, mixins.CommentRequired, DeleteView):
+class CommentDelete(LoginRequiredMixin, CommentMixin, DeleteView):
     template_name = 'blog/comment.html'
 
 
-class CategoryDetailView(mixins.PostFilter, mixins.PaginatePost, DetailView):
+class CategoryDetailView(PostFilterMixin, PaginateMixin, DetailView):
     model = Category
     template_name = 'blog/category.html'
     slug_url_kwarg = 'category_slug'
@@ -102,7 +106,7 @@ class CategoryDetailView(mixins.PostFilter, mixins.PaginatePost, DetailView):
         return queryset
 
 
-class UserDetailView(mixins.PostFilter, mixins.PaginatePost, DetailView):
+class UserDetailView(PostFilterMixin, PaginateMixin, DetailView):
     model = User
     template_name = 'blog/profile.html'
     slug_field = 'username'
