@@ -5,12 +5,11 @@ from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView, UpdateView
 )
 
-from blog import forms
+from blog import constants, forms
 from blog.mixins import (
-    AuthorRequiredMixin, CommentMixin, PostFilterMixin, PaginateMixin
+    AuthorRequiredMixin, CommentMixin, PaginateMixin, PostSetMixin
 )
 from blog.models import Category, Comment, Post, User
-from blog import constants
 
 
 class PostListView(ListView):
@@ -72,14 +71,10 @@ class CommentAdd(LoginRequiredMixin, CreateView):
     form_class = forms.CommentForm
     related_post = None
 
-    def dispatch(self, request, **kwargs):
-        self.related_post = get_object_or_404(Post, pk=kwargs['pk'])
-        return super().dispatch(request)
-
     def form_valid(self, form):
-        if form.instance is not None:
-            form.instance.author = self.request.user
-            form.instance.post = self.related_post
+        self.related_post = get_object_or_404(Post, pk=self.kwargs['pk'])
+        form.instance.author = self.request.user
+        form.instance.post = self.related_post
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -95,7 +90,7 @@ class CommentDelete(LoginRequiredMixin, CommentMixin, DeleteView):
     template_name = 'blog/comment.html'
 
 
-class CategoryDetailView(PostFilterMixin, PaginateMixin, DetailView):
+class CategoryDetailView(PaginateMixin, PostSetMixin):
     model = Category
     template_name = 'blog/category.html'
     slug_url_kwarg = 'category_slug'
@@ -106,7 +101,7 @@ class CategoryDetailView(PostFilterMixin, PaginateMixin, DetailView):
         return queryset
 
 
-class UserDetailView(PostFilterMixin, PaginateMixin, DetailView):
+class UserDetailView(PaginateMixin, PostSetMixin):
     model = User
     template_name = 'blog/profile.html'
     slug_field = 'username'

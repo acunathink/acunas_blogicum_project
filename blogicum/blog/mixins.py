@@ -3,10 +3,10 @@ from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
-from django.views.generic import View
+from django.views.generic import DetailView, View
 
-from blog.models import Comment
-from blog import constants
+from blog.constants import POSTS_PER_PAGE
+from blog.models import Comment, User
 
 
 class AuthorRequiredMixin(View):
@@ -27,24 +27,24 @@ class CommentMixin(AuthorRequiredMixin):
         return reverse('blog:post_detail', kwargs={'pk': self.kwargs['pk']})
 
 
-class PostFilterMixin():
+class PostSetMixin(DetailView):
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
-        if (self.object == request.user):
-            user_posts = (
-                self.object.post_set.all()
-                .order_by('-pub_date')
-                .annotate(comment_count=Count('comments'))
-            )
+
+        if isinstance(self.object, User) and self.object == request.user:
+            post_set = self.object.post_set.all()
         else:
-            user_posts = (
+            post_set = (
                 self.object.post_set.all()
                 .filter(is_published=True, pub_date__lte=timezone.now())
-                .order_by('-pub_date')
-                .annotate(comment_count=Count('comments'))
             )
-        self.kwargs['user_posts'] = user_posts
+
+        self.kwargs['post_set'] = (
+            post_set.order_by('-pub_date')
+            .annotate(comment_count=Count('comments'))
+        )
+
         context = self.get_context_data(object=self.object)
         return self.render_to_response(context)
 
@@ -53,8 +53,8 @@ class PaginateMixin:
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user_posts = self.kwargs['user_posts']
-        paginator = Paginator(user_posts, constants.POSTS_PER_PAGE)
+        post_set = self.kwargs['post_set']
+        paginator = Paginator(post_set, POSTS_PER_PAGE)
         page_number = self.request.GET.get('page')
         context['page_obj'] = paginator.get_page(page_number)
         return context
